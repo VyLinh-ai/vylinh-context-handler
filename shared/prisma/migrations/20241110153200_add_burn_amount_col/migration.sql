@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "NFTBalance" ADD COLUMN     "burnAmount" DECIMAL(78,0) NOT NULL DEFAULT 0;

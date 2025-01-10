@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TXHistory {
+  id     String       @id @default(uuid())
+  type   ContractType
+  amount Decimal      @default(1) @db.Decimal(78, 0)
+  from   String       @db.VarChar(42)
+  to     String       @db.VarChar(42)
+  status TX_STATUS
+}
+
+model TXOnchainHistory {
+  id     String       @id @default(uuid())
+  type   ContractType
+  amount Decimal      @default(1) @db.Decimal(78, 0)
+  from   String       @db.VarChar(42)
+  to     String       @db.VarChar(42)
+  status TX_STATUS
+  txHash String
+}
+
+enum TX_STATUS {
+  FAILED
+  SUCCESS
+  PENDING
+}
+
+enum KEY_ROLE {
+  MASTER
+  GD
+}
+
+enum PLATFORM {
+  TG
+  WEB
+  WIN
+  MAC
+}
+
+model Network {
+  id     Int             @id
+  symbol String          @db.VarChar(4)
+  name   String          @db.VarChar(50)
+  smc    SmartContract[]
+
+  ConfirmedTX ConfirmedTX[]
+}
+
+model User {
+  id         String       @id @default(uuid())
+  address    String       @unique @db.VarChar(42)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  NFTBalance NFTBalance[]
+}
+
+model APIKey {
+  id            String    @id @default(uuid())
+  apiKey        String    @unique
+  isBlackListed Boolean
+  roles         KEY_ROLE
+  project       Project[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  projects    Project[] @relation("ProjectCategories")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Project {
+  id          String       @id @default(uuid())
+  name        String
+  gameIcon    String?
+  banner      String?
+  ApiKey      APIKey       @relation(fields: [apiKeyID], references: [id])
+  apiKeyID    String
+  collections Collection[]
+  categories  Category[]   @relation("ProjectCategories")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  platform    PLATFORM[]   @default([])
+  isEnabled   Boolean      @default(false)
+  nameSlug    String?
+
+  @@index([nameSlug])
+}
+
+model Collection {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  avatarUrl   String
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id])
+  assets      NFTAsset[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  SmartContract SmartContract[]
+}
+
+model MediaStorage {
+  id      String  @id @default(cuid())
+  S3Url   String
+  IPFSUrl String?
+
+  NFTAsset NFTAsset @relation(fields: [AssetId], references: [id])
+  AssetId  String   @unique
+}
+
+model Metadata {
+  id       String   @id @default(cuid())
+  metadata Json?
+  IPFSUrl  String?
+  NFTAsset NFTAsset @relation(fields: [AssetId], references: [id])
+  AssetId  String   @unique
+}
+
+model NFTAsset {
+  id           String        @id @default(uuid())
+  name         String
+  tokenId      Decimal       @db.Decimal(78, 0)
+  description  String
+  collectionId String
+  media        MediaStorage?
+  metadata     Metadata?
+  collection   Collection    @relation(fields: [collectionId], references: [id])
+  quantity     Decimal       @default(1) @db.Decimal(78, 0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  NFTBalance   NFTBalance[]
+
+  @@unique([tokenId, collectionId])
+}
+
+model NFTBalance {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  nftAssetId String
+  nftAsset   NFTAsset @relation(fields: [nftAssetId], references: [id])
+  amount     Decimal  @default(1) @db.Decimal(78, 0)
+  lockAmount Decimal  @default(0) @db.Decimal(78, 0)
+  burnAmount Decimal  @default(0) @db.Decimal(78, 0)
+  version    String   @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, nftAssetId, version])
+  @@unique([userId, nftAssetId])
+}
+
+model SmartContract {
+  id              String       @id @default(uuid())
+  contractType    ContractType
+  deployedOn      Network      @relation(fields: [networkID], references: [id])
+  networkID       Int
+  contractName    String
+  tokenSymbol     String
+  totalSupply     Int? // Only for ERC1155
+  collectionId    String?
+  collection      Collection?  @relation(fields: [collectionId], references: [id])
+  deployedAt      DateTime?
+  updatedAt       DateTime     @updatedAt
+  contractAddress String       @db.VarChar(42)
+  nameSlug        String?
+
+  @@unique([contractAddress, networkID])
+  @@index([nameSlug])
+}
+
+model ConfirmedTX {
+  id        String  @id
+  networkID Int
+  network   Network @relation(fields: [networkID], references: [id])
+}
+
+enum ContractType {
+  ERC721
+  ERC1155
+}

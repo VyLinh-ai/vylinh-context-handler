@@ -1,0 +1,11 @@
+{
+  "SHIELD_DURABILITY": {
+    "shield1": 1,
+    "shield2": 3
+  },
+  "GRASS_EXP": {
+    "grass1": 200,
+    "grass2": 350,
+    "grass3": 500
+  }
+}

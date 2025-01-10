@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "MediaStorage" ALTER COLUMN "IPFSUrl" DROP NOT NULL;

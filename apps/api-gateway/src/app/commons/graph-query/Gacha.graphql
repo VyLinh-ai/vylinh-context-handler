@@ -1,0 +1,15 @@
+query GachaQuery($start: BigInt!, $end: BigInt!, $roller: String) {
+  gachaEntities(
+    where: {
+      gachaTimestamp_gte: $start
+      gachaTimestamp_lte: $end
+      roller: $roller
+    }
+  ) {
+    roller {
+      id
+    }
+    gachaTimestamp
+    id
+  }
+}

@@ -1,0 +1,17 @@
+-- CreateTable
+CREATE TABLE "NFTBalance" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "nftAssetId" TEXT NOT NULL,
+    "amount" DECIMAL(78,0) NOT NULL DEFAULT 1,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "NFTBalance_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "NFTBalance" ADD CONSTRAINT "NFTBalance_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "NFTBalance" ADD CONSTRAINT "NFTBalance_nftAssetId_fkey" FOREIGN KEY ("nftAssetId") REFERENCES "NFTAsset"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

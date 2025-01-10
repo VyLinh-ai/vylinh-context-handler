@@ -1,0 +1,67 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": ["tsconfig.base.json"],
+    "sourceType": "module"
+  },
+  "root": true,
+  "ignorePatterns": ["*.graphql"], // Assuming you want to ignore GraphQL files specifically
+  "plugins": [
+    "@nx",
+    "@typescript-eslint",
+    "prettier" // Corrected: No need for 'plugin:prettier/recommended' here
+  ],
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended" // This enables both eslint-plugin-prettier and eslint-config-prettier
+  ],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "rules": {
+        "@nx/enforce-module-boundaries": [
+          "error",
+          {
+            "enforceBuildableLibDependency": true,
+            "allow": [],
+            "depConstraints": [
+              {
+                "sourceTag": "*",
+                "onlyDependOnLibsWithTags": ["*"]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": [
+        "plugin:@nx/typescript"
+      ],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "warn",
+        "@typescript-eslint/interface-name-prefix": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "prettier/prettier": ["warn", { "endOfLine": "auto", "semi": true }],
+        "operator-linebreak": "off",
+        "@typescript-eslint/no-shadow": "warn",
+        "indent": "off",
+        "@typescript-eslint/indent": "off",
+        "max-len": ["warn", 150]
+      }
+    },
+    {
+      "files": ["*.js", "*.jsx"],
+      "extends": ["plugin:@nx/javascript"]
+    },
+    {
+      "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

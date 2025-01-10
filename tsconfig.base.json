@@ -1,0 +1,35 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "paths": {
+      "@layerg-agg-workspace/shared": ["shared/src/index.ts"],
+      "@layerg-agg-workspace/shared/constants": [
+        "shared/src/constants/index.ts"
+      ],
+      "@layerg-agg-workspace/shared/dto": ["shared/src/lib/dto/index.ts"],
+      "@layerg-agg-workspace/shared/entities": [
+        "shared/src/lib/entities/index.ts"
+      ],
+      "@layerg-agg-workspace/shared/graphql": ["shared/src/graphql/index.ts"],
+      "@layerg-agg-workspace/shared/services": [
+        "shared/src/lib/services/index.ts"
+      ],
+      "@layerg-agg-workspace/shared/utils": ["shared/src/lib/utils/index.ts"],
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

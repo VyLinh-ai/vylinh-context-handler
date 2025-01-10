@@ -1,0 +1,61 @@
+services:
+  redis:
+    image: redis
+    container_name: redis
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+    restart: always
+    volumes:
+      - ../redis-data:/data
+  api:
+    container_name: api
+    image: u2ulabs/layerg-aggregator:latest
+    build: .
+    restart: always
+    ports:
+      - 3000:3000
+    command: "node dist/apps/api-gateway/main.js"
+    depends_on:
+      - redis
+      - postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 300m
+  migration:
+    image: u2ulabs/layerg-aggregator:latest
+    container_name: migration
+    command: "npx prisma migrate deploy --schema=./shared/prisma/schema.prisma"
+    depends_on:
+      - postgres      
+  tx-handler:
+    container_name: tx-handler
+    image: u2ulabs/layerg-aggregator:latest
+    restart: always
+    command: "node dist/apps/tx-handler/main.js"
+    volumes:
+      - ../logs/tx-handler:/usr/src/app/server/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 300m
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1000M
+    depends_on:
+      - api
+      - postgres
+  postgres:
+    container_name: postgres
+    image: postgres:14.4-alpine
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=layerg-agg
+    volumes:
+      - ../postgres:/var/lib/postgresql/data

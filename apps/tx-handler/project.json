@@ -1,0 +1,24 @@
+{
+  "name": "tx-handler",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/tx-handler/src",
+  "projectType": "application",
+  "targets": {
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "tx-handler:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "tx-handler:build:development"
+        },
+        "production": {
+          "buildTarget": "tx-handler:build:production"
+        }
+      }
+    }
+  },
+  "tags": []
+}
