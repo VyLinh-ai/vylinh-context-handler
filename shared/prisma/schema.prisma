@@ -7,186 +7,171 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model TXHistory {
-  id     String       @id @default(uuid())
-  type   ContractType
-  amount Decimal      @default(1) @db.Decimal(78, 0)
-  from   String       @db.VarChar(42)
-  to     String       @db.VarChar(42)
-  status TX_STATUS
+model Chat {
+  id         String @id
+  userId     String // External User ID reference
+  folderId   String?
+  title      String?
+  chat       Json?
+  createdAt  BigInt?
+  updatedAt  BigInt?
+  shareId    String? @unique
+  archived   Boolean?
+  pinned     Boolean?
+  meta       Json @default("{}")
 }
 
-model TXOnchainHistory {
-  id     String       @id @default(uuid())
-  type   ContractType
-  amount Decimal      @default(1) @db.Decimal(78, 0)
-  from   String       @db.VarChar(42)
-  to     String       @db.VarChar(42)
-  status TX_STATUS
-  txHash String
+model ChatIdTag {
+  id        String @id
+  tagName   String?
+  chatId    String?
+  userId    String? // External reference to the User
+  timestamp BigInt?
 }
 
-enum TX_STATUS {
-  FAILED
-  SUCCESS
-  PENDING
+model Config {
+  id        Int     @id @default(autoincrement())
+  data      Json
+  version   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum KEY_ROLE {
-  MASTER
-  GD
+model Document {
+  collectionName String @id
+  name           String? @unique
+  title          String?
+  filename       String?
+  content        String?
+  userId         String? // External reference to the User
+  timestamp      BigInt?
 }
 
-enum PLATFORM {
-  TG
-  WEB
-  WIN
-  MAC
+model Feedback {
+  id         String @id
+  userId     String? // External reference to the User
+  version    BigInt @default(0)
+  type       String?
+  data       Json?
+  meta       Json?
+  snapshot   Json?
+  createdAt  BigInt
+  updatedAt  BigInt
 }
 
-model Network {
-  id     Int             @id
-  symbol String          @db.VarChar(4)
-  name   String          @db.VarChar(50)
-  smc    SmartContract[]
-
-  ConfirmedTX ConfirmedTX[]
+model File {
+  id         String @id
+  userId     String? // External reference to the User
+  filename   String?
+  path       String?
+  meta       Json?
+  data       Json?
+  createdAt  BigInt?
+  updatedAt  BigInt?
+  hash       String?
 }
 
-model User {
-  id         String       @id @default(uuid())
-  address    String       @unique @db.VarChar(42)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  NFTBalance NFTBalance[]
+model Folder {
+  id         String
+  parentId   String?
+  userId     String // External reference to the User
+  name       String
+  items      Json?
+  meta       Json?
+  isExpanded Boolean @default(false)
+  createdAt  BigInt
+  updatedAt  BigInt
+
+  @@id([id, userId]) // Compound primary key
 }
 
-model APIKey {
-  id            String    @id @default(uuid())
-  apiKey        String    @unique
-  isBlackListed Boolean
-  roles         KEY_ROLE
-  project       Project[]
+model Function {
+  id         String @id
+  userId     String? // External reference to the User
+  name       String?
+  type       String?
+  content    String?
+  meta       Json?
+  valves     Json?
+  isActive   Boolean?
+  isGlobal   Boolean?
+  updatedAt  BigInt?
+  createdAt  BigInt?
 }
 
-model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique
+model Group {
+  id          String @id @unique
+  userId      String? // External reference to the User
+  name        String?
   description String?
-  projects    Project[] @relation("ProjectCategories")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  data        Json?
+  meta        Json?
+  permissions Json?
+  userIds     Json?
+  createdAt   BigInt?
+  updatedAt   BigInt?
 }
 
-model Project {
-  id          String       @id @default(uuid())
-  name        String
-  gameIcon    String?
-  banner      String?
-  ApiKey      APIKey       @relation(fields: [apiKeyID], references: [id])
-  apiKeyID    String
-  collections Collection[]
-  categories  Category[]   @relation("ProjectCategories")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  platform    PLATFORM[]   @default([])
-  isEnabled   Boolean      @default(false)
-  nameSlug    String?
-
-  @@index([nameSlug])
+model Knowledge {
+  id            String @id
+  userId        String // External reference to the User
+  name          String
+  description   String?
+  data          Json?
+  meta          Json?
+  accessControl Json?
+  createdAt     BigInt
+  updatedAt     BigInt?
 }
 
-model Collection {
-  id          String     @id @default(uuid())
-  name        String
-  description String
-  avatarUrl   String
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id])
-  assets      NFTAsset[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  SmartContract SmartContract[]
+model Memory {
+  id        String @id
+  userId    String? // External reference to the User
+  content   String?
+  updatedAt BigInt?
+  createdAt BigInt?
 }
 
-model MediaStorage {
-  id      String  @id @default(cuid())
-  S3Url   String
-  IPFSUrl String?
-
-  NFTAsset NFTAsset @relation(fields: [AssetId], references: [id])
-  AssetId  String   @unique
+model Model {
+  id            String @id
+  userId        String? // External reference to the User
+  baseModelId   String?
+  name          String?
+  params        Json?
+  meta          Json?
+  accessControl Json?
+  isActive      Boolean @default(true)
+  updatedAt     BigInt?
+  createdAt     BigInt?
 }
 
-model Metadata {
-  id       String   @id @default(cuid())
-  metadata Json?
-  IPFSUrl  String?
-  NFTAsset NFTAsset @relation(fields: [AssetId], references: [id])
-  AssetId  String   @unique
+model Prompt {
+  command       String @id
+  userId        String? // External reference to the User
+  title         String?
+  content       String?
+  timestamp     BigInt?
+  accessControl Json?
 }
 
-model NFTAsset {
-  id           String        @id @default(uuid())
-  name         String
-  tokenId      Decimal       @db.Decimal(78, 0)
-  description  String
-  collectionId String
-  media        MediaStorage?
-  metadata     Metadata?
-  collection   Collection    @relation(fields: [collectionId], references: [id])
-  quantity     Decimal       @default(1) @db.Decimal(78, 0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  NFTBalance   NFTBalance[]
+model Tag {
+  id     String
+  userId String // External reference to the User
+  name   String?
+  meta   Json?
 
-  @@unique([tokenId, collectionId])
+  @@id([id, userId])  // Compound primary key
 }
 
-model NFTBalance {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  nftAssetId String
-  nftAsset   NFTAsset @relation(fields: [nftAssetId], references: [id])
-  amount     Decimal  @default(1) @db.Decimal(78, 0)
-  lockAmount Decimal  @default(0) @db.Decimal(78, 0)
-  burnAmount Decimal  @default(0) @db.Decimal(78, 0)
-  version    String   @default(uuid())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([userId, nftAssetId, version])
-  @@unique([userId, nftAssetId])
-}
-
-model SmartContract {
-  id              String       @id @default(uuid())
-  contractType    ContractType
-  deployedOn      Network      @relation(fields: [networkID], references: [id])
-  networkID       Int
-  contractName    String
-  tokenSymbol     String
-  totalSupply     Int? // Only for ERC1155
-  collectionId    String?
-  collection      Collection?  @relation(fields: [collectionId], references: [id])
-  deployedAt      DateTime?
-  updatedAt       DateTime     @updatedAt
-  contractAddress String       @db.VarChar(42)
-  nameSlug        String?
-
-  @@unique([contractAddress, networkID])
-  @@index([nameSlug])
-}
-
-model ConfirmedTX {
-  id        String  @id
-  networkID Int
-  network   Network @relation(fields: [networkID], references: [id])
-}
-
-enum ContractType {
-  ERC721
-  ERC1155
+model Tool {
+  id            String @id
+  userId        String? // External reference to the User
+  name          String?
+  content       String?
+  specs         Json?
+  meta          Json?
+  valves        Json?
+  accessControl Json?
+  updatedAt     BigInt?
+  createdAt     BigInt?
 }
